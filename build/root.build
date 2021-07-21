@@ -1,0 +1,10 @@
+cxx.std = experimental
+cxx.features.modules = true
+using cxx
+
+hxx{*}: extension = hpp
+mxx{*}: extension = mpp
+ixx{*}: extension = ipp
+cxx{*}: extension = cpp
+
+test.target = $cxx.target

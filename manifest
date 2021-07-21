@@ -1,0 +1,18 @@
+: 1
+name: lyrahgames-random
+version: 0.1.0-a.0.z
+project: lyrahgames
+summary: C++ Library for Random Number Generation
+license: GPL-3.0-or-later ; GNU General Public License v3.0 or later
+
+description-file: README.md
+url: https://github.com/lyrahgames/random
+email: lyrahgames@mailbox.org
+
+depends: * build2 >= 0.14.0-
+depends: * bpkg >= 0.14.0-
+
+depends: doctest ^ 2.4.6
+
+requires: c++20
+requires: gcc ^ 11.1.0

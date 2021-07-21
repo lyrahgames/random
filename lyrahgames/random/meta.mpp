@@ -1,0 +1,107 @@
+module;
+#include <cstdint>
+#include <cstring>
+
+export module lyrahgames.random : meta;
+
+import<functional>;
+import<type_traits>;
+import<concepts>;
+
+export namespace lyrahgames::random {
+
+namespace generic {
+
+template <typename T, typename U>
+concept identical = std::same_as<T, U>;
+
+template <typename T>
+concept integral = std::integral<T>;
+
+template <typename T>
+concept unsigned_integral = std::unsigned_integral<T>;
+
+// Supported Floating-Point Types Concept
+template <typename T>
+concept floating_point = identical<T, float> || identical<T, double>;
+
+// Concept to decide, that a type is not 'void'.
+template <typename T>
+concept not_void = !identical<T, void>;
+
+// Scalar Bit Packet Concept used as return type for PRNGs.
+template <typename T>
+concept scalar_bit_packet = identical<T, uint32_t> || identical<T, uint64_t>;
+
+// Generator Concept
+template <typename T>
+concept generator = requires(T &&g) {
+  { std::forward<T>(g)() } -> not_void;
+};
+
+} // namespace generic
+
+namespace meta {
+
+// Returns the return type of a generator with its qualifications, like 'const'.
+template <generic::generator T>
+using qualified_result = decltype(std::declval<T>()());
+
+// Returns the return type of a generator without qualification by decaying it.
+template <generic::generator T>
+using result = std::decay_t<qualified_result<T>>;
+
+} // namespace meta
+
+namespace generic {
+
+// Random Bit Generator Concept
+template <typename T>
+concept random_bit_generator =
+    generator<T> && scalar_bit_packet<meta::result<T>>;
+
+// Seeder Concept to decide if type 'T' can be used as a seeder in the seeding
+// constructor of type 'U'.
+template <typename T, typename U>
+concept seeder_for =
+    random_bit_generator<T> && !identical<std::decay_t<T>, std::decay_t<U>>;
+
+// Concept to decide if a given type is seedable by a generator.
+template <typename T, typename U>
+concept seedable_by = random_bit_generator<T> && seeder_for<U, T> &&
+    requires(T t, U u) {
+  t = T{u};
+};
+
+// Concept to decide if a type has a member function, called 'uniform', with
+// arguments for bounds and the correct return type.
+template <typename T, typename R>
+concept has_uniform = requires(T t, R a, R b) {
+  { t.uniform(a, b) } -> identical<R>;
+};
+
+// Concept to decide if a type has a member function template, called 'uniform',
+// without arguments for bounds and the correct return type.
+template <typename T, typename R>
+concept has_uniform_01 = requires(T t) {
+  { t.template uniform<R>() } -> identical<R>;
+};
+
+} // namespace generic
+
+template <generic::random_bit_generator G, generic::unsigned_integral U>
+inline void generate(G &&g, U *data, size_t n) {
+  using uint_type = meta::result<G>;
+  if constexpr (generic::identical<uint_type, U>) {
+    for (size_t i = 0; i < n; ++i)
+      data[i] = g();
+  } else {
+    const size_t size = 1 + (n * sizeof(U) - 1) / sizeof(uint_type);
+    uint_type buffer[size];
+    for (size_t i = 0; i < size; ++i)
+      buffer[i] = g();
+    std::memcpy(data, buffer, n * sizeof(U));
+  }
+}
+
+} // namespace lyrahgames::random

@@ -1,0 +1,16 @@
+./: lib{lyrahgames-random}: mxx{** -version} mxx{version}
+{
+  bin.binless = true
+}
+
+mxx{version}: in{version} $src_root/manifest
+{
+  dist = true
+  clean = ($src_root != $out_root)
+}
+
+mxx{*}:
+{
+  install = include/lyrahgames/random/
+  install.subdirs = true
+}

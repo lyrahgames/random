@@ -1,0 +1,5 @@
+export module lyrahgames.random;
+
+export import : version;
+export import : meta;
+export import : mt19937;

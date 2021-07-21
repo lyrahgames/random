@@ -1,0 +1,5 @@
+import libs = lyrahgames-random%lib{lyrahgames-random}
+./: exe{version}: cxx{version} $libs
+
+import libs += doctest%lib{doctest}
+./: exe{tests}: {hxx mxx cxx}{** -version} $libs
