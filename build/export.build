@@ -1,6 +1,6 @@
 $out_root/
 {
-  include lyrahgames/random/
+  include sources/
 }
 
-export $out_root/lyrahgames/random/$import.target
+export $out_root/sources/$import.target
